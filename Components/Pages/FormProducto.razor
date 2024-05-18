@@ -1,0 +1,88 @@
+﻿@page "/productos/nuevo"
+@page "/productos/{ID_Producto:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigation;
+@inject IProducto Repositorio;
+@inject ICategoria RepositorioCategoria;
+<h3>Producto</h3>
+<EditForm Model="producto" FormName="frmProducto" OnValidSubmit="Agregar">
+<DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="txtNombre">Nombre</label>
+        <InputText id="txtNombre" class="form-control" @bind-Value="producto.Nombre" />
+        <ValidationMessage For="@(() => producto.Nombre)" />
+    </div>
+    <div class="form-group">
+        <label for="txtDescripcion">Descripcion</label>
+        <InputText id="txtDescripcion" class="form-control" @bind-Value="producto.Descripcion" />
+        <ValidationMessage For="@(() => producto.Descripcion)" />
+    </div>
+    <div class="form-group">
+        <label for="txtPrecio">Precio</label>
+        <InputNumber id="txtPrecio" class="form-control" @bind-Value="producto.Precio" />
+        <ValidationMessage For="@(() => producto.Precio)" />
+    </div>
+    <div class="form-group">
+        <label for="txtStock">Stock</label>
+        <InputNumber id="txtStock" class="form-control" @bind-Value="producto.Cant_Stock" />
+        <ValidationMessage For="@(() => producto.Cant_Stock)" />
+    </div>
+    <div class="form-group">
+        <label for="txtStock">Cantidad mínima</label>
+        <InputNumber id="txtStock" class="form-control" @bind-Value="producto.Cant_min" />
+        <ValidationMessage For="@(() => producto.Cant_min)" />
+    </div>
+    <div class="form-group">
+        <label for="txtStock"> Categoría </label>
+            <InputSelect id="txtStock" class="form-control" @bind-Value="producto.CategoriaID_Categoria">
+                <option value="0"> Seleccionar </option>
+                @foreach (Categoria c in categorias)
+                {
+                    <option value="@c.ID_Categoria">@c.Nombre</option>
+                }
+            </InputSelect>
+    </div>
+    <div>
+        @if (producto.ID_Producto > 0)
+        {
+            <button class="btn btn-primary" type="submit">Actualizar</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" type="submit">Agregar</button>
+        }
+        <button class="btn btn-danger m-lg-2" @onclick="cancelar">Cancelar</button>  
+    </div>
+
+</EditForm>
+@code {
+    [Parameter]
+    public int ID_Producto { get; set; }
+    private Producto producto = new Producto();
+    private List<Categoria> categorias= new();
+    protected override async Task OnParametersSetAsync()
+    {
+        categorias = await RepositorioCategoria.GetAll();
+        if (ID_Producto != 0)
+        {
+            producto = await Repositorio.Get(ID_Producto);
+        }
+    }
+    private void cancelar()
+    {
+        navigation.NavigateTo("productos");
+    }
+    private async void Agregar()
+    {
+        if(producto.ID_Producto > 0)
+        {
+            await Repositorio.Update(producto);
+        }
+        else
+        {
+        await Repositorio.Add(producto);
+        }
+        cancelar();
+            
+    }
+}

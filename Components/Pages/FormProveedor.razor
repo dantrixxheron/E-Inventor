@@ -1,0 +1,74 @@
+﻿@page "/proveedores/nuevo"
+@page "/proveedores/{ID_Proveedor:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigation;
+@inject IProveedor Repositorio;
+
+<h3>Proveedor</h3>
+
+<EditForm Model="proveedor" OnValidSubmit="Agregar">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="txtNombre">Nombre</label>
+        <InputText id="txtNombre" class="form-control" @bind-Value="proveedor.Nombre" />
+        <ValidationMessage For="@(() => proveedor.Nombre)" />
+    </div>
+    <div class="form-group">
+        <label for="txtDireccion">Dirección</label>
+        <InputText id="txtDireccion" class="form-control" @bind-Value="proveedor.Direccion" />
+        <ValidationMessage For="@(() => proveedor.Direccion)" />
+    </div>
+    <div class="form-group">
+        <label for="txtPrecio">Teléfono</label>
+        <InputText id="txtPrecio" class="form-control" @bind-Value="proveedor.Telefono" />
+        <ValidationMessage For="@(() => proveedor.Telefono)" />
+    </div>
+    <div class="form-group">
+        <label for="txtCorreo">Correo</label>
+        <InputText id="txtCorreo" class="form-control" @bind-Value="proveedor.Correo" />
+        <ValidationMessage For="@(() => proveedor.Correo)" />
+    </div>
+    <div>
+        @if (proveedor.ID_Proveedor > 0)
+        {
+            <button class="btn btn-primary" type="submit">Actualizar</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" type="submit">Agregar</button>
+        }
+        <button class="btn btn-danger m-lg-2" @onclick="cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID_Proveedor { get; set; }
+    private Proveedor proveedor = new Proveedor();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ID_Proveedor > 0)
+        {
+            proveedor = await Repositorio.Get(ID_Proveedor);
+        }
+    }
+
+    private void cancelar()
+    {
+        navigation.NavigateTo("proveedores");
+    }
+
+    private async Task Agregar()
+    {
+        if (proveedor.ID_Proveedor > 0)
+        {
+            await Repositorio.Update(proveedor);
+        }
+        else
+        {
+            await Repositorio.Add(proveedor);
+        }
+        cancelar();
+    }
+}

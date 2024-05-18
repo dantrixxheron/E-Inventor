@@ -1,0 +1,86 @@
+﻿@page "/venta"
+@using AdministrarTiendaElect.Data
+@inject IVentaDetalle repositorioV
+@inject IVentaControl repositorioVC
+@inject IProducto repositorioP
+@inject NavigationManager navigation
+
+<PageTitle>Venta</PageTitle>
+
+<h3>Detalle de la venta</h3>
+<EditForm Model="ventaDetalle" FormName="frmVentaDetalle">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="txtDescripcion">Hora</label>
+        <input type="time" id="txtDescripcion" class="form-control" @bind="ventaDetalle.Hora" />
+        <ValidationMessage For="@(() => ventaDetalle.Hora)" />
+    </div>
+    @if (ventaDetalles.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vd in ventaDetalles)
+                {
+                    <tr>
+                        <td>@vd.Producto.Nombre</td>
+                        <td>@vd.Cantidad</td>
+                        <td>@vd.Producto.Precio</td>
+                        <td>@(vd.Cantidad * vd.Producto.Precio)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p><em>No hay productos en la venta</em></p>
+        <p><em><button class="btn btn-outline-primary" @onclick="()=>NavegarParaAgregarProducto()">Agregar Producto</button></em></p>
+    }
+    <div class="form-group">
+        <label for="txtPrecio">Precio</label>
+        <InputNumber id="txtPrecio" class="form-control" @bind-Value="total" disabled/>
+    </div>
+    <div>
+            <button class="btn btn-primary" type="submit" @onclick="()=>AgregarVenta()">Venta</button>
+    </div>
+
+</EditForm>
+@code {
+    private VentaControl ventaControl = new VentaControl();
+    private VentaDetalle ventaDetalle = new VentaDetalle();
+    private List<VentaDetalle> ventaDetalles = new List<VentaDetalle>();
+    private List<Producto> productos = new List<Producto>();
+    private decimal total;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await repositorioP.GetAll();
+    }
+    private async void SetFecha()
+    {
+        await repositorioVC.Add(ventaControl);
+        ventaDetalle.VentaControlID_Ticket = ventaControl.ID_Ticket;
+    }
+    private async void AgregarVenta()
+    {
+        await repositorioV.Add(ventaDetalle);
+    }
+
+    private void NavegarParaAgregarProducto()
+    {
+        navigation.NavigateTo("/venta/productos/agregar"); // Cambia esta ruta según sea necesario
+    }
+
+    private void CalcularTotal()
+    {
+        total = ventaDetalles.Sum(vd => vd.Cantidad * vd.Producto.Precio);
+    }
+}
